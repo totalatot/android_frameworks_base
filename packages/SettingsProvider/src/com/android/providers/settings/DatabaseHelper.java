@@ -1,4 +1,4 @@
-/*
+	/*
  * Copyright (C) 2007 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -2584,6 +2584,9 @@ class DatabaseHelper extends SQLiteOpenHelper {
                 defaultLidBehavior = 0;
             }
             loadSetting(stmt, Settings.Global.LID_BEHAVIOR, defaultLidBehavior);
+
+            loadIntegerSetting(stmt, Global.DEVELOPMENT_SETTINGS_ENABLED,
+                    R.integer.def_development_settings);
 
             /*
              * IMPORTANT: Do not add any more upgrade steps here as the global,
