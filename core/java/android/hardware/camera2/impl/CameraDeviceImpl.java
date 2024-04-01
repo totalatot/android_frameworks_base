@@ -784,7 +784,7 @@ public class CameraDeviceImpl extends CameraDevice
     public boolean isSessionConfigurationSupported(
             @NonNull SessionConfiguration sessionConfig) throws CameraAccessException,
             UnsupportedOperationException, IllegalArgumentException {
-        synchronized (mInterfaceLock) {
+        synchronized(mInterfaceLock) {
             checkIfCameraClosedOrInError();
 
             return mRemoteDevice.isSessionConfigurationSupported(sessionConfig);
@@ -800,25 +800,14 @@ public class CameraDeviceImpl extends CameraDevice
         }
     }
 
-    /**
-     * Disable CONTROL_ENABLE_ZSL based on targetSdkVersion and capture template.
-     */
-    public static void disableZslIfNeeded(CameraMetadataNative request,
-            int targetSdkVersion, int templateType) {
-        // If targetSdkVersion is at least O, no need to set ENABLE_ZSL to false
-        // for STILL_CAPTURE template.
-        if (targetSdkVersion >= Build.VERSION_CODES.O
-                && templateType == TEMPLATE_STILL_CAPTURE) {
-            return;
-        }
-
+    private void overrideEnableZsl(CameraMetadataNative request, boolean newValue) {
         Boolean enableZsl = request.get(CaptureRequest.CONTROL_ENABLE_ZSL);
         if (enableZsl == null) {
             // If enableZsl is not available, don't override.
             return;
         }
 
-        request.set(CaptureRequest.CONTROL_ENABLE_ZSL, false);
+        request.set(CaptureRequest.CONTROL_ENABLE_ZSL, newValue);
     }
 
     @Override
@@ -838,7 +827,12 @@ public class CameraDeviceImpl extends CameraDevice
 
             templatedRequest = mRemoteDevice.createDefaultRequest(templateType);
 
-            disableZslIfNeeded(templatedRequest, mAppTargetSdkVersion, templateType);
+            // If app target SDK is older than O, or it's not a still capture template, enableZsl
+            // must be false in the default request.
+            if (mAppTargetSdkVersion < Build.VERSION_CODES.O ||
+                    templateType != TEMPLATE_STILL_CAPTURE) {
+                overrideEnableZsl(templatedRequest, false);
+            }
 
             CaptureRequest.Builder builder = new CaptureRequest.Builder(
                     templatedRequest, /*reprocess*/false, CameraCaptureSession.SESSION_ID_NONE,
@@ -858,7 +852,12 @@ public class CameraDeviceImpl extends CameraDevice
 
             templatedRequest = mRemoteDevice.createDefaultRequest(templateType);
 
-            disableZslIfNeeded(templatedRequest, mAppTargetSdkVersion, templateType);
+            // If app target SDK is older than O, or it's not a still capture template, enableZsl
+            // must be false in the default request.
+            if (mAppTargetSdkVersion < Build.VERSION_CODES.O ||
+                    templateType != TEMPLATE_STILL_CAPTURE) {
+                overrideEnableZsl(templatedRequest, false);
+            }
 
             CaptureRequest.Builder builder = new CaptureRequest.Builder(
                     templatedRequest, /*reprocess*/false, CameraCaptureSession.SESSION_ID_NONE,
