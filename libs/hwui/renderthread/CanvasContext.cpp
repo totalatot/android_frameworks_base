@@ -621,7 +621,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
 
     ATRACE_FORMAT("Drawing " RECT_STRING, SK_RECT_ARGS(dirty));
 
-    const auto drawResult = mRenderPipeline->draw(frame, windowDirty, dirty, mLightGeometry,
+    auto drawResult = mRenderPipeline->draw(frame, windowDirty, dirty, mLightGeometry,
                                                   &mLayerUpdateQueue, mContentDrawBounds, mOpaque,
                                                   mLightInfo, mRenderNodes, &(profiler()), mBufferParams);
 
